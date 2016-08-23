@@ -72,24 +72,25 @@ for index, row in df.iterrows():
     ds = math.ceil(fps/6.0)
     out = cv2.VideoWriter(DATADIR + row.folder + '/' + outputName, cv2.VideoWriter_fourcc('M','J','P','G'), fps/ds, S, True)
 
-  
-    first = np.array([])
 
-    warp_matrix = np.eye(2, 3, dtype=np.float32) 
-    full_warp = np.eye(3, 3, dtype=np.float32)
-
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(4,4))
     for tt in range(fStart,fStop):
 
         # Capture frame-by-frame
         _, frame = cap.read()    
-        first = frame.copy()
-        
-        # create an empty image like the first frame
-        im2 = np.empty_like(frame)
-        np.copyto(im2, first)
-        
+
+        # calculate the difference between the frame and the background image
+        bkg = cv2.absdiff(frame, background)
+        # convert to grayscale image
+        bkg = cv2.cvtColor(bkg, cv2.COLOR_BGR2GRAY)
+        # threshold the image so that it's black or white
+        bkg = cv2.threshold(bkg, 20, 255, cv2.THRESH_BINARY)[1]
+        # this ensures any objects are solid objects
+        bkg = cv2.morphologyEx(bkg, cv2.MORPH_OPEN, kernel)
+        # convert back to RGB image
+        imOut =  cv2.cvtColor(bkg,cv2.COLOR_GRAY2BGR)
         # output to movie file
-        out.write(im2)
+        out.write(imOut)
         
         
     cap.release()
