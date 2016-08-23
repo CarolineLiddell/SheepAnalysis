@@ -94,11 +94,3 @@ for index, row in df.iterrows():
         
     cap.release()
     out.release()
-    
-    
-
-    
-    
-    
-    
-   
